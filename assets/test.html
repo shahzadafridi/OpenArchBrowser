@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional CV Template for PDF Conversion</title>
+
+    <!-- PDF Generation Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&family=Inter:wght@300;400;500;600;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+/* Default mobile view styles */
+body {
+  font-family: 'Inter', sans-serif;
+  line-height: 1.4;
+  color: rgba(51, 51, 51, 1);
+  background: #e0e0e0;
+  padding: 20px 0;
+  margin: 0;
+  transform-origin: top left;
+  transform: scale(0.4); /* Scale down the whole page */
+  width: 250vw; /* Wider so it fits full layout in mobile view */
+  height: 120vh;
+  overflow: auto;
+}
+
+        .controls {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 2000;
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .controls button {
+            padding: 8px 16px;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            border: none;
+            background-color: #8c6b4e;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .controls button:hover {
+            background-color: #6a513b;
+        }
+
+        .cv-container {
+            width: auto; /* Use a fixed width for consistent PDF output */
+            margin: 0 auto;
+            background: transparent;
+            display: flex;
+            border-radius: 24px;
+            overflow: visible;
+        }
+
+        /*
+         * PDF & PRINT STYLES:
+         * These styles are applied when printing or generating a PDF.
+         * They override the mobile-view styles to ensure a clean, 1:1 render.
+        */
+        @media print {
+             body {
+    transform: none !important;
+    width: auto !important;
+    height: auto !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+    overflow: visible !important;
+  }
+
+  .cv-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    transform: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+            .controls {
+                display: none;
+            }
+
+            .sidebar, .main-content {
+                box-shadow: none !important;
+            }
+        }
+
+        .sidebar {
+            width: 320px;
+            background: rgba(217, 197, 160, 0.85);
+            color: white;
+            padding: 0;
+            position: relative;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 8px 32px 0 rgba(31,38,135,0.10);
+            border-radius: 24px 0 0 24px;
+        }
+
+        .header-section {
+            background: transparent;
+            padding: 0;
+            text-align: center;
+            position: relative;
+            height: 180px;
+        }
+
+        .profile-card {
+            position: absolute;
+            left: 50%;
+            top: 30px;
+            transform: translateX(-50%);
+            background: #fff;
+            box-shadow: 0 4px 24px rgba(31,38,135,0.10);
+            border-radius: 18px;
+            padding: 32px 24px 24px 24px;
+            width: 90%;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .profile-img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 15px;
+            border: 4px solid #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .profile-name {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 28px;
+            font-weight: 900;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: rgba(140, 107, 78, 1);
+            text-align: center;
+        }
+
+        .profile-title {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 15px;
+            color: rgba(140, 107, 78, 1);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+        .profile-card .personal-info {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 15px;
+            color: rgba(140, 107, 78, 1);
+            font-weight: 700;
+            line-height: 1.7;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            text-align: center;
+            font-size: 12px !important;
+            word-break: break-word;
+        }
+        .profile-card .personal-info:last-child {
+            margin-bottom: 0;
+        }
+        .sidebar-content {
+            padding: 320px 32px 32px 32px; /* Increased top padding */
+        }
+
+        .sidebar h2 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 15px;
+            text-transform: uppercase;
+            margin-bottom: 18px;
+            color: #fff;
+            font-weight: 900;
+            letter-spacing: 2.5px;
+            position: relative;
+            padding-bottom: 8px;
+            padding-left: 32px;
+        }
+
+        .sidebar h2::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 8px;
+            height: 100%;
+            background: rgba(140, 107, 78, 1);
+            border-radius: 4px;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 18px;
+            font-size: 14px;
+            color: rgba(51, 51, 51, 1);
+        }
+
+        .contact-icon {
+            width: 32px;
+            height: 32px;
+            margin-right: 14px;
+            flex-shrink: 0; /* Prevent icon from shrinking */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #fff;
+            color: rgba(140, 107, 78, 1);
+            border-radius: 50%;
+            box-shadow: 0 1px 4px rgba(96,165,250,0.10);
+        }
+
+        .contact-icon svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .contact-item span {
+            word-break: break-word; /* Allow long emails/links to wrap */
+        }
+
+        .skills-list, .languages-list {
+            list-style: none;
+            margin-bottom: 25px;
+        }
+
+        .skills-list li, .languages-list li {
+            margin-bottom: 16px;
+            font-size: 14px;
+            position: relative;
+            padding-left: 0;
+            font-weight: 700;
+            color: rgba(51, 51, 51, 1);
+        }
+
+        .languages-list li {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .skill-bar, .language-bar {
+            width: 100%;
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            margin-top: 5px;
+            margin-bottom: 2px;
+            overflow: hidden;
+        }
+
+        .skill-bar-fill, .language-bar-fill {
+            height: 100%;
+            background: rgba(140, 107, 78, 1);
+            border-radius: 4px;
+        }
+
+        .reference {
+            margin-bottom: 24px;
+            font-size: 14px;
+        }
+
+        .reference-name {
+            font-weight: 900;
+            margin-bottom: 3px;
+            color: rgba(140, 107, 78, 1);
+        }
+
+        .reference-title, .reference-contact {
+            color: rgba(51, 51, 51, 1);
+            margin-bottom: 2px;
+        }
+
+        .reference-contact { font-size: 13px; }
+
+        .main-content {
+            flex: 1;
+            padding: 0;
+            background: rgba(250, 249, 246, 1);
+            border-radius: 0 24px 24px 0;
+            box-shadow: 0 8px 32px 0 rgba(31,38,135,0.10);
+        }
+
+        .main-header {
+            background: rgba(217, 197, 160, 0.85);
+            color: rgba(140, 107, 78, 1);
+            padding: 60px 40px 80px 40px;
+            text-align: right;
+            border-radius: 0 24px 0 0;
+            position: relative;
+        }
+
+        .main-name {
+            font-size: 36px;
+            font-weight: 900;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 2.5px;
+        }
+
+        .main-title {
+            font-size: 15px;
+            color: rgba(51, 51, 51, 1);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 700;
+        }
+
+        .content-area { padding: 60px 60px 40px 60px; }
+        .section { margin-bottom: 48px; }
+
+        .section-divider {
+            border: none;
+            border-top: 1.5px solid rgba(217, 197, 160, 0.85);
+            margin: 40px 0 32px 0;
+        }
+
+        .section h2 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 16px;
+            text-transform: uppercase;
+            margin-bottom: 22px;
+            color: rgba(140, 107, 78, 1);
+            font-weight: 900;
+            letter-spacing: 3px;
+            position: relative;
+            padding-bottom: 8px;
+            padding-left: 32px;
+            display: flex;
+            align-items: center;
+        }
+
+        .section h2::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 8px;
+            height: 100%;
+            background: rgba(140, 107, 78, 1);
+            border-radius: 4px;
+        }
+
+        .section-icon {
+            width: 22px;
+            height: 22px;
+            background: rgba(140, 107, 78, 1);
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            color: white;
+            font-size: 14px;
+        }
+
+        .section-icon svg { width: 14px; height: 14px; }
+
+        .profile-text {
+            font-size: 15px;
+            line-height: 1.8;
+            color: rgba(51, 51, 51, 1);
+            text-align: justify;
+            font-weight: 500;
+        }
+
+        .timeline {
+            position: relative;
+            margin-left: 18px;
+            padding-left: 32px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 8px;
+            top: 0;
+            width: 4px;
+            height: 100%;
+            background: rgba(217, 197, 160, 0.85);
+            border-radius: 2px;
+        }
+
+        .experience-item, .education-item, .project-item {
+            background: rgba(250, 249, 246, 1);
+            border-radius: 14px;
+            box-shadow: 0 2px 8px rgba(96,165,250,0.07);
+            padding: 28px 32px 22px 32px;
+            margin-bottom: 32px;
+            position: relative;
+        }
+
+        .experience-item::before, .education-item::before, .project-item::before {
+            content: '';
+            position: absolute;
+            left: -40px;
+            top: 32px;
+            width: 18px;
+            height: 18px;
+            background: #fff;
+            border: 4px solid rgba(140, 107, 78, 1);
+            border-radius: 50%;
+            z-index: 1;
+        }
+
+        .experience-header, .education-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+
+        .job-title, .degree-title {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 16px;
+            font-weight: 900;
+            color: rgba(140, 107, 78, 1);
+        }
+
+        .job-date, .education-date {
+            font-size: 12px;
+            color: rgba(51, 51, 51, 1) !important;
+            font-weight: 400;
+            white-space: nowrap;
+            margin-left: 12px;
+        }
+
+        .company-name, .institution {
+            font-size: 14px;
+            color: rgba(51, 51, 51, 1);
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .job-description, .gpa {
+            font-size: 14px;
+            line-height: 1.6;
+            color: rgba(51, 51, 51, 1);
+        }
+
+        .job-description ul {
+            margin-left: 18px;
+            margin-top: 7px;
+        }
+
+        .job-description li { margin-bottom: 5px; }
+        .hidden { display: none !important; }
+
+    </style>
+</head>
+<body>
+
+<div class="cv-container" id="cv-container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="header-section">
+            <div class="profile-card">
+                <label style="cursor:pointer;display:block;" id="profile-photo-container">
+                    <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=300&fit=crop&crop=face" alt="Profile Image" class="profile-img" id="profile-img-editable">
+                </label>
+                <div class="profile-name">FAQIR ULLAH</div>
+                <div class="profile-title">Flutter Developer</div>
+                <div class="personal-info" id="date-of-birth">Date of Birth: 01/01/1990</div>
+                <div class="personal-info" id="nationality">Nationality: Pakistani</div>
+                <div class="personal-info" id="gender">Gender: Male</div>
+                <div class="personal-info" id="marital-status">Marital Status: Single</div>
+                <div class="personal-info" id="religion">Religion: Islam</div>
+            </div>
+        </div>
+
+        <div class="sidebar-content">
+            <!-- Contact -->
+            <div class="contact-section">
+                <h2>CONTACT</h2>
+                <div class="contact-item">
+                    <span class="contact-icon"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 16.92V19a2 2 0 0 1-2.18 2A19.72 19.72 0 0 1 3 5.18 2 2 0 0 1 5 3h2.09a2 2 0 0 1 2 1.72c.13 1.13.37 2.23.72 3.28a2 2 0 0 1-.45 2.11l-1.27 1.27a16 16 0 0 0 6.29 6.29l1.27-1.27a2 2 0 0 1 2.11-.45c1.05.35 2.15.59 3.28.72A2 2 0 0 1 21 16.91z"/></svg></span>
+                    <span>0310 9766610</span>
+                </div>
+                <div class="contact-item">
+                    <span class="contact-icon"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><polyline points="22,6 12,13 2,6"/></svg></span>
+                    <span>hello@reallygreatsite.com</span>
+                </div>
+                <div class="contact-item">
+                    <span class="contact-icon"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 0 20"/></svg></span>
+                    <span>PESHAWAR, PAKISTAN</span>
+                </div>
+                <div class="contact-item" id="website-container">
+                    <span class="contact-icon"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 8h20"/></svg></span>
+                    <span>www.reallygreatsite.com</span>
+                </div>
+                <div class="contact-item" id="linkedin-container">
+                    <span class="contact-icon"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg></span>
+                    <span>linkedin.com/in/username</span>
+                </div>
+            </div>
+
+            <!-- Skills -->
+            <div class="skills-section">
+                <h2>SKILLS</h2>
+                <ul class="skills-list">
+                    <li>Project Management<div class="skill-bar"><div class="skill-bar-fill" style="width: 95%"></div></div></li>
+                    <li>Teamwork<div class="skill-bar"><div class="skill-bar-fill" style="width: 92%"></div></div></li>
+                    <li>Leadership<div class="skill-bar"><div class="skill-bar-fill" style="width: 93%"></div></div></li>
+                    <li>Effective Communication<div class="skill-bar"><div class="skill-bar-fill" style="width: 94%"></div></div></li>
+                </ul>
+            </div>
+
+            <!-- Languages -->
+            <div class="languages-section">
+                <h2>LANGUAGES</h2>
+                <ul class="languages-list">
+                    <li><span class="language-label">English (Fluent)</span><div class="language-bar"><div class="language-bar-fill" style="width: 98%"></div></div></li>
+                    <li><span class="language-label">Urdu (Fluent)</span><div class="language-bar"><div class="language-bar-fill" style="width: 90%"></div></div></li>
+                </ul>
+            </div>
+
+            <!-- References -->
+            <div class="references-section">
+                <h2>REFERENCE</h2>
+                <div class="reference">
+                    <div class="reference-name">Hamad Azam</div>
+                    <div class="reference-title">Wardiere Inc. / CTO</div>
+                    <div class="reference-contact">Phone: 123-456-7890</div>
+                    <div class="reference-contact">Email: hello@reallygreatsite.com</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="main-header">
+            <div class="main-name">FAQIR ULLAH</div>
+            <div class="main-title">Flutter Developer</div>
+        </div>
+
+        <div class="content-area">
+            <!-- Profile -->
+            <div class="section">
+                <h2><span class="section-icon"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="7" r="4"/><path d="M5.5 21a7.5 7.5 0 0 1 13 0"/></svg></span> PROFILE</h2>
+                <p class="profile-text">I'm Faqir Ullah, a web developer at Brikmas Technology. I build modern, responsive websites using tools like Django, Flask, HTML, CSS, and APIs. Passionate about clean code and user-friendly design.</p>
+            </div>
+            <hr class="section-divider"/>
+            <!-- Work Experience -->
+            <div class="section">
+                <h2><span class="section-icon"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 3v4"/><path d="M8 3v4"/></svg></span> WORK EXPERIENCE</h2>
+                <div class="timeline" id="experience-timeline">
+                    <div class="experience-item">
+                        <div class="experience-header">
+                            <div class="job-title">Marketing Manager & Specialist</div>
+                            <div class="job-date">2025 - PRESENT</div>
+                        </div>
+                        <div class="company-name">Borcellle Studio</div>
+                        <div class="job-description"><ul><li>Develop and execute comprehensive marketing strategies and campaigns that align with company objectives.</li></ul></div>
+                    </div>
+                </div>
+            </div>
+            <hr class="section-divider"/>
+            <!-- Projects Section -->
+            <div class="section" id="projects-section">
+                <h2><span class="section-icon"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="7" rx="2"/><path d="M16 3v4"/><path d="M8 3v4"/></svg></span> PROJECTS</h2>
+                <div class="timeline" id="projects-timeline">
+                    <div class="project-item">
+                        <div class="experience-header"><div class="job-title">Portfolio Website</div><div class="job-date">2023</div></div>
+                        <div class="company-name">Personal Project</div>
+                        <div class="job-description"><ul><li>Designed and developed a responsive personal portfolio website to showcase my work and skills.</li></ul></div>
+                    </div>
+                </div>
+            </div>
+            <hr class="section-divider"/>
+            <!-- Education -->
+            <div class="section">
+                <h2><span class="section-icon"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 8h20"/></svg></span> EDUCATION</h2>
+                <div class="timeline" id="education-timeline">
+                    <div class="education-item">
+                        <div class="education-header"><div class="degree-title">Bachelor of Computer Science</div><div class="education-date">2023 - 2027</div></div>
+                        <div class="institution">Iqra University</div>
+                        <div class="gpa">Grade: 3.8 / 4.0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    /**
+     * Populates the CV template with data from a JSON object.
+     * @param {object} data - The CV data.
+     */
+    function populateCV(data) {
+        const doc = document;
+
+        // Helper function to set text content if element exists
+        const setText = (selector, text) => {
+            const el = doc.querySelector(selector);
+            if (el && text) el.textContent = text;
+        };
+        const setAllText = (selector, text) => {
+            doc.querySelectorAll(selector).forEach(el => { if (el && text) el.textContent = text; });
+        };
+        const setSrc = (selector, src) => {
+            const el = doc.querySelector(selector);
+            if (el && src) el.src = src;
+        };
+
+        // Personal Info
+        if (data.personalInfo) {
+            setAllText('.profile-name, .main-name', data.personalInfo.name);
+            setAllText('.profile-title, .main-title', data.personalInfo.profession);
+            setSrc('#profile-img-editable', data.personalInfo.profilePhoto);
+            setText('#date-of-birth', `Date of Birth: ${data.personalInfo.dob || ''}`);
+            setText('#nationality', `Nationality: ${data.personalInfo.nationality || ''}`);
+            setText('#gender', `Gender: ${data.personalInfo.gender || ''}`);
+            setText('#marital-status', `Marital Status: ${data.personalInfo.maritalStatus || ''}`);
+            setText('#religion', `Religion: ${data.personalInfo.religion || ''}`);
+
+            // Contact Info
+            setText('.contact-item:nth-of-type(1) span:last-child', data.personalInfo.phone);
+            setText('.contact-item:nth-of-type(2) span:last-child', data.personalInfo.email);
+            setText('.contact-item:nth-of-type(3) span:last-child', data.personalInfo.address);
+            setText('#website-container span:last-child', data.personalInfo.website);
+            setText('#linkedin-container span:last-child', data.personalInfo.linkedin);
+        }
+
+        // Profile/Objective
+        if (data.objective) setText('.profile-text', data.objective.objective);
+
+        // Skills
+        if (Array.isArray(data.skills)) {
+            const skillsList = doc.querySelector('.skills-list');
+            if (skillsList) {
+                skillsList.innerHTML = data.skills.map(skill => `
+                    <li>${skill.name || ''}
+                        <div class="skill-bar"><div class="skill-bar-fill" style="width: ${skill.level ? (skill.level / 5 * 100) : 0}%"></div></div>
+                    </li>
+                `).join('');
+            }
+        }
+
+        // Languages
+        if (Array.isArray(data.languages)) {
+            const langList = doc.querySelector('.languages-list');
+            if (langList) {
+                langList.innerHTML = data.languages.map(lang => `
+                    <li><span class="language-label">${lang.name || ''}</span>
+                        <div class="language-bar"><div class="language-bar-fill" style="width: ${lang.level ? (lang.level / 5 * 100) : 0}%"></div></div>
+                    </li>
+                `).join('');
+            }
+        }
+
+        // Experience
+        if (Array.isArray(data.experience)) {
+            const expTimeline = doc.getElementById('experience-timeline');
+            if (expTimeline) {
+                expTimeline.innerHTML = data.experience.map(exp => `
+                    <div class="experience-item">
+                        <div class="experience-header">
+                            <div class="job-title">${exp.jobTitle || ''}</div>
+                            <div class="job-date">${exp.startDate || ''} - ${exp.endDate || 'Present'}</div>
+                        </div>
+                        <div class="company-name">${exp.companyName || ''}</div>
+                        <div class="job-description">
+                            <ul>${Array.isArray(exp.description) ? exp.description.map(d => `<li>${d}</li>`).join('') : `<li>${exp.description || ''}</li>`}</ul>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // Projects
+        if (Array.isArray(data.projects)) {
+            const projTimeline = doc.getElementById('projects-timeline');
+            if (projTimeline) {
+                projTimeline.innerHTML = data.projects.map(p => `
+                    <div class="project-item">
+                        <div class="experience-header">
+                            <div class="job-title">${p.name || ''}</div>
+                            <div class="job-date">${p.year || ''}</div>
+                        </div>
+                        <div class="company-name">${p.company || 'Personal Project'}</div>
+                        <div class="job-description">
+                            <ul>${Array.isArray(p.description) ? p.description.map(d => `<li>${d}</li>`).join('') : `<li>${p.description || ''}</li>`}</ul>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // Education
+        if (Array.isArray(data.education)) {
+            const eduTimeline = doc.getElementById('education-timeline');
+            if (eduTimeline) {
+                eduTimeline.innerHTML = data.education.map(ed => `
+                    <div class="education-item">
+                        <div class="education-header">
+                            <div class="degree-title">${ed.course || ''}</div>
+                            <div class="education-date">${ed.year || ''}</div>
+                        </div>
+                        <div class="institution">${ed.school || ''}</div>
+                        <div class="gpa">Grade: ${ed.grade || ''}</div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // References
+        if (Array.isArray(data.references)) {
+            const refSection = doc.querySelector('.references-section');
+            if(refSection) {
+                refSection.innerHTML = `<h2>REFERENCE</h2>` + data.references.map(ref => `
+                    <div class="reference">
+                        <div class="reference-name">${ref.name || ''}</div>
+                        <div class="reference-title">${ref.jobTitle || ''} / ${ref.companyName || ''}</div>
+                        ${ref.phone ? `<div class="reference-contact">Phone: ${ref.phone}</div>` : ''}
+                        ${ref.email ? `<div class="reference-contact">Email: ${ref.email}</div>` : ''}
+                    </div>
+                `).join('');
+            }
+        }
+    }
+
+    // --- Example Usage ---
+    // You can call populateCV with your data like this:
+    document.addEventListener('DOMContentLoaded', function() {
+        const exampleData = {
+            personalInfo: {
+                name: "ZIA ARIFIDI",
+                profession: "Senior Flutter Developer",
+                dob: "1995-05-15",
+                profilePhoto: "https://i.pravatar.cc/300",
+                nationality: "Pakistani",
+                gender: "Male",
+                maritalStatus: "Single",
+                religion: "Islam",
+                email: "zia.arifidi@example.com",
+                phone: "+92 348 987 6666",
+                website: "ziaarifidi.dev",
+                linkedin: "linkedin.com/in/ziaarifidi",
+                address: "PESHAWAR, PAKISTAN"
+            },
+            objective: {
+                objective: "A passionate and results-driven software engineer with 5+ years of experience in mobile application development. Aiming to leverage expertise in Flutter and Dart to build scalable, maintainable, and efficient applications while continuously learning new technologies and solving real-world problems."
+            },
+            education: [
+                { course: "BS in Computer Science", school: "National University", grade: "3.6 CGPA", year: "2014 - 2018" },
+                { course: "Intermediate in Pre-Engineering", school: "Islamabad College", grade: "A+", year: "2012 - 2014" }
+            ],
+            experience: [
+                { companyName: "Techzone Solutions", jobTitle: "Flutter Developer", startDate: "2020", endDate: "2022", description: ["Developed and maintained cross-platform mobile apps using Flutter and Dart.", "Collaborated with backend teams, implemented REST APIs, and published apps to Play Store and App Store."] },
+                { companyName: "DevHive Studios", jobTitle: "Junior Android Developer", startDate: "2019", endDate: "2021", description: ["Worked on native Android applications using Kotlin and Java.", "Handled UI/UX designs, local storage, and third-party SDK integrations."] }
+            ],
+            skills: [
+                { name: "Flutter & Dart", level: 5 },
+                { name: "Firebase", level: 4 },
+                { name: "REST APIs & GraphQL", level: 4 },
+                { name: "GIT & Github", level: 5 },
+                { name: "State Management (Bloc, Provider)", level: 4 }
+            ],
+            projects: [
+                { name: "E-commerce App", year: "2023", description: "A fully functional e-commerce app with Firebase backend, featuring real-time inventory, payment gateway integration, and user authentication." },
+                { name: "Task Management App", year: "2022", description: "A cross-platform task management app with offline support and cloud synchronization using SQLite and Firebase Firestore." }
+            ],
+            languages: [
+                { name: "English (Fluent)", level: 5 },
+                { name: "Urdu (Native)", level: 5 },
+                { name: "Pashto (Native)", level: 5 }
+            ],
+            references: [
+                { name: "Hamad Azam", jobTitle: "CTO", companyName: "Wardiere Inc.", email: "hamad.azam@example.com", phone: "123-456-7890" }
+            ]
+        };
+
+        populateCV(exampleData);
+    });
+
+</script>
+</body>
+</html>
