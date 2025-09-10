@@ -19,9 +19,9 @@ class SidebarWidget extends StatefulWidget {
   final GlobalKey searchBarKey;
   final VoidCallback onNewTabTap;
   final VoidCallback onAddTap;
-  final dynamic webController;
   final Map<String, String> siteUrls;
   final Function(String) onSiteSelected;
+  final void Function(String url) onBookmarkSelected;
 
   const SidebarWidget({
     super.key,
@@ -33,9 +33,9 @@ class SidebarWidget extends StatefulWidget {
     required this.searchBarKey,
     required this.onNewTabTap,
     required this.onAddTap,
-    required this.webController,
     required this.siteUrls,
     required this.onSiteSelected,
+    required this.onBookmarkSelected,
   });
 
   @override
@@ -62,7 +62,8 @@ class _SidebarWidgetState extends State<SidebarWidget> {
             searchBarKey: widget.searchBarKey,
           ),
           const SizedBox(height: AppSize.s24),
-          const SideBarBookmarksSectionWidget(),
+          SideBarBookmarksSectionWidget(
+              onBookmarkSelected: widget.onBookmarkSelected),
           const SizedBox(height: AppSize.s24),
           _buildVentureDiveSection(),
           const SizedBox(height: AppSize.s24),
@@ -112,8 +113,6 @@ class _SidebarWidgetState extends State<SidebarWidget> {
                     selectedSite = title; // Update selected site
                   });
                   widget.onSiteSelected(title);
-                  widget.webController
-                      .loadRequest(Uri.parse(widget.siteUrls[title]!));
                 },
               ),
               const SizedBox(height: AppSize.s8),

@@ -97,33 +97,33 @@ class _BrowserWidgetState extends State<BrowserWidget> {
                     onCloseTap: () {
                       Navigator.of(context).maybePop();
                     },
-                    onControlTap: () {
-                      // Add minimize or other control behavior here
-                    },
+                    onControlTap: () {},
                     onAddressTap: _toggleMiniWindow,
                     searchBarKey: _searchBarKey,
+                    onBookmarkSelected: (url) {
+                      webController.loadRequest(Uri.parse(url));
+                    },
                     onNewTabTap: () {
                       setState(() {
                         currentUrl = AppStrings.defaultNewTabUrl;
                         webController.loadRequest(Uri.parse(currentUrl));
                       });
                     },
-                    onAddTap: () {
-                      // Add behavior for adding a new item
-                    },
-                    webController: webController,
                     siteUrls: siteUrls,
                     onSiteSelected: (site) {
                       setState(() {
                         webController.loadRequest(Uri.parse(siteUrls[site]!));
                       });
                     },
+                    onAddTap: () {},
                   ),
                   Expanded(
                       child: Container(
                           padding: const EdgeInsets.all(AppSize.s10),
-                          child:
-                              WebViewContainer(webController: webController))),
+                          child: WebViewContainer(
+                            webController: webController,
+                            url: "https://flutter.dev",
+                          ))),
                 ],
               ))),
     );

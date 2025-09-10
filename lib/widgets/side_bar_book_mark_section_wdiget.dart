@@ -3,7 +3,13 @@ import 'package:flutter/material.dart';
 import '../resources/values_manager.dart';
 
 class SideBarBookmarksSectionWidget extends StatefulWidget {
-  const SideBarBookmarksSectionWidget({super.key});
+  /// Callback when a bookmark is tapped
+  final void Function(String url) onBookmarkSelected;
+
+  const SideBarBookmarksSectionWidget({
+    super.key,
+    required this.onBookmarkSelected,
+  });
 
   @override
   State<SideBarBookmarksSectionWidget> createState() =>
@@ -14,32 +20,36 @@ class _SideBarBookmarksSectionWidgetState
     extends State<SideBarBookmarksSectionWidget> {
   int _selectedIndex = 2; // default selected (play_arrow)
 
-  final List<IconData> _icons = [
-    Icons.search,
-    Icons.email_outlined,
-    Icons.play_arrow,
+  /// Each bookmark = icon + url
+  final List<Map<String, dynamic>> _bookmarks = [
+    {"icon": Icons.search, "url": "https://google.com"},
+    {"icon": Icons.email_outlined, "url": "https://mail.google.com"},
+    {"icon": Icons.play_arrow, "url": "https://youtube.com"},
   ];
 
   void _onBookmarkTap(int index) {
     setState(() {
       _selectedIndex = index;
     });
+    // fire callback with url
+    widget.onBookmarkSelected(_bookmarks[index]["url"]);
   }
 
   @override
   Widget build(BuildContext context) {
     return Row(
-      children: List.generate(_icons.length, (index) {
+      children: List.generate(_bookmarks.length, (index) {
         return Row(
           children: [
             GestureDetector(
               onTap: () => _onBookmarkTap(index),
               child: BookmarkIconWidget(
-                icon: _icons[index],
+                icon: _bookmarks[index]["icon"],
                 isSelected: _selectedIndex == index,
               ),
             ),
-            if (index != _icons.length - 1) const SizedBox(width: AppSize.s8),
+            if (index != _bookmarks.length - 1)
+              const SizedBox(width: AppSize.s8),
           ],
         );
       }),
@@ -61,7 +71,6 @@ class BookmarkIconWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return AnimatedScale(
       scale: isSelected ? AppSize.s1_05 : AppSize.s1,
-      // bigger when selected, smaller otherwise
       duration: const Duration(milliseconds: AppMilliSec.s200),
       curve: Curves.easeInOut,
       child: Container(

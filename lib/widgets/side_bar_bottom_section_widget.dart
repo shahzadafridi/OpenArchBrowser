@@ -17,7 +17,7 @@ class SideBarBottomSectionWidget extends StatelessWidget {
         GestureDetector(
             onTap: onLibraryTap,
             child: ImageIcon(
-              AssetImage(ImageAssets.libraryIcon),
+              const AssetImage(ImageAssets.libraryIcon),
               color: ColorManager.grey,
               size: AppSize.s24,
             )
@@ -26,7 +26,7 @@ class SideBarBottomSectionWidget extends StatelessWidget {
         GestureDetector(
             onTap: onAddTap,
             child: ImageIcon(
-              AssetImage(ImageAssets.plusIcon),
+              const AssetImage(ImageAssets.plusIcon),
               color: ColorManager.grey,
               size: AppSize.s24,
             ),
