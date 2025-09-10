@@ -20,10 +20,18 @@ class _BrowserWidgetState extends State<BrowserWidget> {
 
   late WebViewController webController;
   String currentUrl = AppStrings.currentUrl;
+  late TextEditingController textEditingController;
+
+  @override
+  void dispose() {
+    textEditingController.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
     super.initState();
+    textEditingController = TextEditingController();
     webController = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..loadRequest(Uri.parse(currentUrl));
@@ -59,18 +67,26 @@ class _BrowserWidgetState extends State<BrowserWidget> {
     return OverlayEntry(
       builder: (context) => Positioned(
         left: offset.dx,
-        top: offset.dy + renderBox.size.height + AppSize.s8,
-        width: renderBox.size.width,
+        top: offset.dy,
+        width: 350,
         child: Material(
           color: Colors.transparent,
           child: TweenAnimationBuilder<double>(
             tween: Tween(begin: AppSize.s0, end: AppSize.s1),
-            duration: const Duration(milliseconds: AppMilliSec.s2000),
+            duration: const Duration(milliseconds: AppMilliSec.s200),
             builder: (context, value, child) => Transform.translate(
               offset: Offset(AppSize.s0, (AppSize.s1 - value) * AppSize.s10),
               child: Opacity(opacity: value, child: child),
             ),
-            child: ArcMiniWindow(onClose: _toggleMiniWindow),
+            child: ArcMiniWindow(
+                onClose: _toggleMiniWindow,
+                onSearch: (query) {
+                  _overlayEntry?.remove();
+                  textEditingController.text =
+                      "https://www.google.com/search?q=$query";
+                  webController.loadRequest(
+                      Uri.parse("https://www.google.com/search?q=$query"));
+                }),
           ),
         ),
       ),
@@ -92,31 +108,31 @@ class _BrowserWidgetState extends State<BrowserWidget> {
               child: Row(
                 children: [
                   SidebarWidget(
-                    onBackTap: _handleBackNavigation,
-                    onForwardTap: _handleForwardNavigation,
-                    onCloseTap: () {
-                      Navigator.of(context).maybePop();
-                    },
-                    onControlTap: () {},
-                    onAddressTap: _toggleMiniWindow,
-                    searchBarKey: _searchBarKey,
-                    onBookmarkSelected: (url) {
-                      webController.loadRequest(Uri.parse(url));
-                    },
-                    onNewTabTap: () {
-                      setState(() {
-                        currentUrl = AppStrings.defaultNewTabUrl;
-                        webController.loadRequest(Uri.parse(currentUrl));
-                      });
-                    },
-                    siteUrls: siteUrls,
-                    onSiteSelected: (site) {
-                      setState(() {
-                        webController.loadRequest(Uri.parse(siteUrls[site]!));
-                      });
-                    },
-                    onAddTap: () {},
-                  ),
+                      onBackTap: _handleBackNavigation,
+                      onForwardTap: _handleForwardNavigation,
+                      onRefresh: () {
+                        webController.reload();
+                      },
+                      onControlTap: () {},
+                      onAddressTap: _toggleMiniWindow,
+                      searchBarKey: _searchBarKey,
+                      onBookmarkSelected: (url) {
+                        webController.loadRequest(Uri.parse(url));
+                      },
+                      onNewTabTap: () {
+                        setState(() {
+                          currentUrl = AppStrings.defaultNewTabUrl;
+                          webController.loadRequest(Uri.parse(currentUrl));
+                        });
+                      },
+                      siteUrls: siteUrls,
+                      onSiteSelected: (site) {
+                        setState(() {
+                          webController.loadRequest(Uri.parse(siteUrls[site]!));
+                        });
+                      },
+                      onAddTap: () {},
+                      textEditingController: textEditingController),
                   Expanded(
                       child: Container(
                           padding: const EdgeInsets.all(AppSize.s10),

@@ -13,7 +13,7 @@ import 'side_bar_new_tab_section_widget.dart';
 class SidebarWidget extends StatefulWidget {
   final VoidCallback onBackTap;
   final VoidCallback onForwardTap;
-  final VoidCallback onCloseTap;
+  final VoidCallback onRefresh;
   final VoidCallback onControlTap;
   final VoidCallback onAddressTap;
   final GlobalKey searchBarKey;
@@ -22,12 +22,13 @@ class SidebarWidget extends StatefulWidget {
   final Map<String, String> siteUrls;
   final Function(String) onSiteSelected;
   final void Function(String url) onBookmarkSelected;
+  final TextEditingController textEditingController;
 
   const SidebarWidget({
     super.key,
     required this.onBackTap,
     required this.onForwardTap,
-    required this.onCloseTap,
+    required this.onRefresh,
     required this.onControlTap,
     required this.onAddressTap,
     required this.searchBarKey,
@@ -36,6 +37,7 @@ class SidebarWidget extends StatefulWidget {
     required this.siteUrls,
     required this.onSiteSelected,
     required this.onBookmarkSelected,
+    required this.textEditingController,
   });
 
   @override
@@ -56,10 +58,11 @@ class _SidebarWidgetState extends State<SidebarWidget> {
           SideBarTopSectionWidget(
             onBackTap: widget.onBackTap,
             onForwardTap: widget.onForwardTap,
-            onCloseTap: widget.onCloseTap,
+            onRefresh: widget.onRefresh,
             onControlTap: widget.onControlTap,
             onAddressTap: widget.onAddressTap,
             searchBarKey: widget.searchBarKey,
+            textEditingController: widget.textEditingController,
           ),
           const SizedBox(height: AppSize.s24),
           SideBarBookmarksSectionWidget(

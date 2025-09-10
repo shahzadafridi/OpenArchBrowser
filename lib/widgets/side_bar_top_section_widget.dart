@@ -8,18 +8,20 @@ import 'side_bar_navigation_button_widget.dart';
 class SideBarTopSectionWidget extends StatefulWidget {
   final VoidCallback onBackTap;
   final VoidCallback onForwardTap;
-  final VoidCallback onCloseTap;
+  final VoidCallback onRefresh;
   final VoidCallback onControlTap;
   final VoidCallback onAddressTap; // 👈 NEW: to toggle mini window
+  final TextEditingController textEditingController;
   final GlobalKey searchBarKey; // 👈 NEW: to anchor mini window
 
   const SideBarTopSectionWidget({
     super.key,
     required this.onBackTap,
     required this.onForwardTap,
-    required this.onCloseTap,
+    required this.onRefresh,
     required this.onControlTap,
     required this.onAddressTap,
+    required this.textEditingController,
     required this.searchBarKey,
   });
 
@@ -29,19 +31,6 @@ class SideBarTopSectionWidget extends StatefulWidget {
 }
 
 class _SideBarTopSectionWidgetState extends State<SideBarTopSectionWidget> {
-  late TextEditingController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = TextEditingController();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -71,7 +60,7 @@ class _SideBarTopSectionWidgetState extends State<SideBarTopSectionWidget> {
             SideBarNavigationButtonWidget(
               icon: AssetImage(ImageAssets.refresh),
               isEnabled: true,
-              onTap: widget.onCloseTap,
+              onTap: widget.onRefresh,
             ),
           ],
         ),
@@ -80,11 +69,10 @@ class _SideBarTopSectionWidgetState extends State<SideBarTopSectionWidget> {
 
         // Address Bar (click to toggle mini window)
         GestureDetector(
-          onTap: widget.onAddressTap,
           child: SizedBox(
             key: widget.searchBarKey,
             height: AppSize.s38,
-            child: UrlTextFieldWidget(controller: _controller),
+            child: UrlTextFieldWidget(controller: widget.textEditingController, onTap: widget.onAddressTap),
           ),
         ),
       ],
