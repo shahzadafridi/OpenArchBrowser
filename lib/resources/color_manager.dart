@@ -1,12 +1,33 @@
 import 'package:flutter/material.dart';
 
 class ColorManager {
+  // Dark Theme Colors
+  static Color darkBackground = HexColor.fromHex("#121212"); // Dark background
+  static Color darkSurface = HexColor.fromHex("#1E1E1E"); // Dark surface
+  static Color darkCard = HexColor.fromHex("#2C2C2C"); // Dark card
+  static Color lightGrey =
+      HexColor.fromHex("#E0E0E0"); // Light grey for dark theme text
+  static Color mediumGrey = HexColor.fromHex("#9E9E9E"); // Medium grey
+
+  // Additional dark theme variants
+  static Color darkPrimary =
+      HexColor.fromHex("#1976D2"); // Dark theme primary variant
+  static Color darkSecondary =
+      HexColor.fromHex("#03DAC6"); // Dark theme secondary
+  static Color darkError = HexColor.fromHex("#CF6679"); // Dark theme error
+
+  // Status bar colors
+  static Color darkStatusBar = HexColor.fromHex("#000000"); // Dark status bar
+  static Color lightStatusBar = HexColor.fromHex("#FFFFFF"); // Light status bar
+
+  // Border colors for dark theme
+  static Color darkBorder = HexColor.fromHex("#333333"); // Dark border
+  static Color lightBorder = HexColor.fromHex("#E0E0E0"); // Light border
+
   static Color primary = const Color(0xff3F8782);
   static Color darkGrey = const Color(0xff525252);
   static Color grey = const Color(0xff737477);
-  static Color lightGrey = const Color(0xffAAAAAA);
 
-  static Color darkPrimary = const Color(0xff3F8782);
   static Color lightPrimary = const Color(0xff69AEA9); // color with 80% opacity
   static Color grey1 = const Color(0xff707070);
   static Color grey2 = const Color(0xff797979);
@@ -35,4 +56,14 @@ class ColorManager {
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
   );
+}
+
+// Helper extension if you don't have it
+extension HexColor on Color {
+  static Color fromHex(String hexString) {
+    final buffer = StringBuffer();
+    if (hexString.length == 6 || hexString.length == 7) buffer.write('ff');
+    buffer.write(hexString.replaceFirst('#', ''));
+    return Color(int.parse(buffer.toString(), radix: 16));
+  }
 }
