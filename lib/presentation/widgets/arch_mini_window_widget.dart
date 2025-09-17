@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:open_arch_browser/model/RecentSearchModel.dart';
 import 'package:open_arch_browser/resources/color_manager.dart';
 import 'package:open_arch_browser/resources/string_manager.dart';
 import 'package:open_arch_browser/resources/values_manager.dart';
@@ -7,14 +9,16 @@ import '../../utils/dummy_data.dart';
 
 class ArcMiniWindow extends StatefulWidget {
   final VoidCallback onClose;
-  final ValueChanged<String> onSearch; // callback with search text
-  final List<String> recentSearches; // external recent searches
+  final ValueChanged<String> onSearch; // when user presses submit/arrow
+  final ValueChanged<String> onChangeValue; // when typing (debounced)
+  final List<RecentSearchModel> recentSearches;
 
   const ArcMiniWindow({
     super.key,
     required this.onClose,
     required this.onSearch,
-    this.recentSearches = const [], // default to empty list
+    required this.onChangeValue,
+    this.recentSearches = const [],
   });
 
   @override
@@ -23,6 +27,9 @@ class ArcMiniWindow extends StatefulWidget {
 
 class _ArcMiniWindowState extends State<ArcMiniWindow> {
   final TextEditingController _controller = TextEditingController();
+  final Duration _debounceDuration = const Duration(milliseconds: 300);
+
+  Timer? _debounce;
   bool _hasText = false;
 
   @override
@@ -37,7 +44,7 @@ class _ArcMiniWindowState extends State<ArcMiniWindow> {
 
   void _onSubmit() {
     if (_controller.text.isNotEmpty) {
-      widget.onSearch(_controller.text); // pass text to callback
+      widget.onSearch(_controller.text);
     }
   }
 
@@ -49,11 +56,17 @@ class _ArcMiniWindowState extends State<ArcMiniWindow> {
     _onSubmit();
   }
 
+  void _onChanged(String value) {
+    _debounce?.cancel();
+    _debounce = Timer(_debounceDuration, () {
+      widget.onChangeValue(value);
+    });
+  }
+
   List<String> get _displaySearches {
-    // Use external recent searches if available, otherwise use dummy data for testing
     return widget.recentSearches.isNotEmpty
-        ? widget.recentSearches.take(8).toList() // limit to 8 items
-        : dummyRecentSearches.take(6).toList(); // limit dummy data to 6 items
+        ? widget.recentSearches.map((e) => e.query).take(8).toList()
+        : dummyRecentSearches.map((e) => e.query).take(6).toList();
   }
 
   @override
@@ -74,7 +87,7 @@ class _ArcMiniWindowState extends State<ArcMiniWindow> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Search input section
+          // Search input
           Container(
             padding: const EdgeInsets.symmetric(horizontal: AppSize.s8),
             child: Row(
@@ -88,6 +101,7 @@ class _ArcMiniWindowState extends State<ArcMiniWindow> {
                       border: InputBorder.none,
                     ),
                     onSubmitted: (_) => _onSubmit(),
+                    onChanged: _onChanged, // debounced handler
                   ),
                 ),
                 IconButton(
@@ -96,27 +110,24 @@ class _ArcMiniWindowState extends State<ArcMiniWindow> {
                     if (_hasText) {
                       _onSubmit();
                     } else {
-                      widget.onClose(); // use the provided callback
+                      widget.onClose();
                     }
                   },
-                )
+                ),
               ],
             ),
           ),
 
-          // Divider
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: AppSize.s16),
             child: Divider(height: 1),
           ),
 
-          // Recent searches section
+          // Recent searches
           if (_displaySearches.isNotEmpty)
             Container(
               constraints: const BoxConstraints(maxHeight: AppSize.s300),
-              // limit height
               child: Column(
-                mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Header
@@ -136,8 +147,7 @@ class _ArcMiniWindowState extends State<ArcMiniWindow> {
                             color: ColorManager.grey,
                           ),
                         ),
-                        if (widget.recentSearches
-                            .isEmpty) // show indicator for dummy data
+                        if (widget.recentSearches.isEmpty)
                           Container(
                             margin: const EdgeInsets.only(left: AppSize.s8),
                             padding: const EdgeInsets.symmetric(
@@ -159,7 +169,7 @@ class _ArcMiniWindowState extends State<ArcMiniWindow> {
                     ),
                   ),
 
-                  // Recent searches list
+                  // List
                   Flexible(
                     child: ListView.builder(
                       shrinkWrap: true,
@@ -176,26 +186,21 @@ class _ArcMiniWindowState extends State<ArcMiniWindow> {
                             ),
                             child: Row(
                               children: [
-                                Icon(
-                                  Icons.history,
-                                  size: AppSize.s16,
-                                  color: ColorManager.grey,
-                                ),
+                                Icon(Icons.history,
+                                    size: AppSize.s16,
+                                    color: ColorManager.grey),
                                 const SizedBox(width: AppSize.s12),
                                 Expanded(
                                   child: Text(
                                     search,
-                                    style:
-                                        const TextStyle(fontSize: AppSize.s14),
+                                    style: const TextStyle(fontSize: AppSize.s14),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
-                                Icon(
-                                  Icons.north_west,
-                                  size: AppSize.s14,
-                                  color: ColorManager.lightGrey,
-                                ),
+                                Icon(Icons.north_west,
+                                    size: AppSize.s14,
+                                    color: ColorManager.lightGrey),
                               ],
                             ),
                           ),
@@ -213,6 +218,7 @@ class _ArcMiniWindowState extends State<ArcMiniWindow> {
 
   @override
   void dispose() {
+    _debounce?.cancel();
     _controller.dispose();
     super.dispose();
   }

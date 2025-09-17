@@ -91,7 +91,7 @@ class AppStrings {
   static const String queryField = "query";
   static const String createdAtField = "createdAt";
   static const String updatedAtField = "updatedAt";
-  static const String searchedAtField = "searchedAt";
+  static const String timestamp = "timestamp";
   static const String faviconField = "favicon";
 
   // Error Messages

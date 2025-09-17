@@ -77,11 +77,13 @@ class _BrowserScreenState extends State<BrowserScreen> {
     _closeMiniWindow(); // Close the mini window first
     textEditingController.text = "${AppStrings.googleSearchUrl}$query";
     webController.loadRequest(Uri.parse("${AppStrings.googleSearchUrl}$query"));
+    // Save into database via ViewModel
+    context.read<RecentSearchViewModel>().addRecentSearch(query);
   }
 
   OverlayEntry _createOverlayEntry() {
     RenderBox renderBox =
-    _searchBarKey.currentContext!.findRenderObject() as RenderBox;
+        _searchBarKey.currentContext!.findRenderObject() as RenderBox;
     var offset = renderBox.localToGlobal(Offset.zero);
 
     return OverlayEntry(
@@ -106,19 +108,20 @@ class _BrowserScreenState extends State<BrowserScreen> {
                 duration: const Duration(milliseconds: AppMilliSec.s200),
                 builder: (context, value, child) => Transform.translate(
                   offset:
-                  Offset(AppSize.s0, (AppSize.s1 - value) * AppSize.s10),
+                      Offset(AppSize.s0, (AppSize.s1 - value) * AppSize.s10),
                   child: Opacity(opacity: value, child: child),
                 ),
-                child: ArcMiniWindow(
-                  onClose: _closeMiniWindow,
-                  onSearch: _handleSearch,
-                  recentSearches: const [
-                    AppStrings.recentSearchFlutter,
-                    AppStrings.recentSearchDart,
-                    AppStrings.recentSearchMobile,
-                    AppStrings.recentSearchState,
-                    AppStrings.recentSearchApi,
-                  ],
+                child: Consumer<RecentSearchViewModel>(
+                  builder: (context, recentSearchVM, _) {
+                    return ArcMiniWindow(
+                      onClose: _closeMiniWindow,
+                      onSearch: _handleSearch,
+                      recentSearches: recentSearchVM.filteredSearches.isNotEmpty ? recentSearchVM.filteredSearches : recentSearchVM.recentSearches,
+                      onChangeValue: (value) {
+                        recentSearchVM.getFilteredSearches(value);
+                      },
+                    );
+                  },
                 ),
               ),
             ),
@@ -143,8 +146,10 @@ class _BrowserScreenState extends State<BrowserScreen> {
           ),
           child: Row(
             children: [
-              Consumer4<BookmarkViewModel, RecentSearchViewModel, TabViewModel, ThemeViewModel>(
-                builder: (context, bookmarkVM, recentSearchVM, tabVM, themeVM, _) {
+              Consumer4<BookmarkViewModel, RecentSearchViewModel, TabViewModel,
+                  ThemeViewModel>(
+                builder:
+                    (context, bookmarkVM, recentSearchVM, tabVM, themeVM, _) {
                   return SidebarWidget(
                     onBackTap: _handleBackNavigation,
                     onForwardTap: _handleForwardNavigation,

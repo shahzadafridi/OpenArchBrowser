@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart'; // for debugPrint
 import 'package:flutter/material.dart';
 import '../../data/repository/recent_search_repository.dart';
 import '../../model/RecentSearchModel.dart';
@@ -15,6 +16,13 @@ class RecentSearchViewModel extends ChangeNotifier {
 
   // Data state
   List<RecentSearchModel> _recentSearches = [];
+  List<RecentSearchModel> _filteredSearches = [];
+
+  List<RecentSearchModel> get recentSearches =>
+      List.unmodifiable(_recentSearches);
+
+  List<RecentSearchModel> get filteredSearches =>
+      _filteredSearches.isEmpty ? _recentSearches : _filteredSearches;
 
   // Constructor
   RecentSearchViewModel({required RecentSearchRepository repository})
@@ -24,7 +32,7 @@ class RecentSearchViewModel extends ChangeNotifier {
   bool get isLoading => _isLoading;
   bool get isOperationLoading => _isOperationLoading;
   String? get error => _error;
-  List<RecentSearchModel> get recentSearches => List.unmodifiable(_recentSearches);
+
   bool get hasRecentSearches => _recentSearches.isNotEmpty;
   int get recentSearchCount => _recentSearches.length;
 
@@ -38,9 +46,12 @@ class RecentSearchViewModel extends ChangeNotifier {
     _clearError();
 
     try {
+      debugPrint("🟡[RecentSearchViewModel] Initializing RecentSearchRepository...");
       await _repository.init();
+      debugPrint("✅[RecentSearchViewModel] Repository initialized successfully");
       await loadRecentSearches();
     } catch (e) {
+      debugPrint("❌[RecentSearchViewModel] Repository initialization failed: $e");
       _setError(AppStrings.initializationError);
     } finally {
       _setLoading(false);
@@ -53,9 +64,12 @@ class RecentSearchViewModel extends ChangeNotifier {
     _clearError();
 
     try {
+      debugPrint("🟡[RecentSearchViewModel] Loading recent searches from DB...");
       _recentSearches = await _repository.getAllRecentSearches();
+      debugPrint("✅[RecentSearchViewModel] Loaded ${_recentSearches.length} recent searches");
       notifyListeners();
     } catch (e) {
+      debugPrint("❌[RecentSearchViewModel] Failed to load recent searches: $e");
       _setError(AppStrings.loadRecentSearchesError);
     } finally {
       _setLoading(false);
@@ -63,15 +77,22 @@ class RecentSearchViewModel extends ChangeNotifier {
   }
 
   /// Add a new recent search
-  Future<bool> addRecentSearch(RecentSearchModel search) async {
+  Future<bool> addRecentSearch(String query) async {
     _setOperationLoading(true);
     _clearError();
 
     try {
+      debugPrint("🟡[RecentSearchViewModel] Adding recent search: $query");
+      final search = RecentSearchModel(
+        query: query,
+        timestamp: DateTime.now(),
+      );
       await _repository.insertRecentSearch(search);
+      debugPrint("✅[RecentSearchViewModel] Recent search added: $query");
       await loadRecentSearches(); // Refresh the list
       return true;
     } catch (e) {
+      debugPrint("❌[RecentSearchViewModel] Failed to add recent search: $e");
       _setError(AppStrings.addRecentSearchError);
       return false;
     } finally {
@@ -83,31 +104,29 @@ class RecentSearchViewModel extends ChangeNotifier {
   Future<bool> addRecentSearchByQuery(String query) async {
     if (query.trim().isEmpty) return false;
 
-    // Don't add if it's the same as the most recent search
     if (_recentSearches.isNotEmpty &&
-        _recentSearches.first.query.toLowerCase() == query.trim().toLowerCase()) {
-      return true; // Consider it successful, just don't add duplicate
+        _recentSearches.first.query.toLowerCase() ==
+            query.trim().toLowerCase()) {
+      debugPrint("ℹ️[RecentSearchViewModel] Skipping duplicate recent search: $query");
+      return true;
     }
 
-    final search = RecentSearchModel(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      query: query.trim(),
-      timestamp: DateTime.now(),
-    );
-
-    return await addRecentSearch(search);
+    return await addRecentSearch(query.trim());
   }
 
   /// Delete a recent search
-  Future<bool> deleteRecentSearch(String id) async {
+  Future<bool> deleteRecentSearch(String query) async {
     _setOperationLoading(true);
     _clearError();
 
     try {
-      await _repository.deleteRecentSearch(id);
+      debugPrint("🟡[RecentSearchViewModel] Deleting recent search: $query");
+      await _repository.deleteRecentSearch(query);
+      debugPrint("✅[RecentSearchViewModel] Deleted recent search: $query");
       await loadRecentSearches(); // Refresh the list
       return true;
     } catch (e) {
+      debugPrint("❌[RecentSearchViewModel] Failed to delete recent search: $e");
       _setError(AppStrings.deleteRecentSearchError);
       return false;
     } finally {
@@ -121,9 +140,12 @@ class RecentSearchViewModel extends ChangeNotifier {
         .where((s) => s.query.toLowerCase() == query.toLowerCase())
         .firstOrNull;
 
-    if (search == null) return false;
+    if (search == null) {
+      debugPrint("ℹ️[RecentSearchViewModel] No search found for query: $query");
+      return false;
+    }
 
-    return await deleteRecentSearch(search.id);
+    return await deleteRecentSearch(search.query);
   }
 
   /// Clear all recent searches
@@ -132,11 +154,15 @@ class RecentSearchViewModel extends ChangeNotifier {
     _clearError();
 
     try {
+      debugPrint("🟡[RecentSearchViewModel] Clearing all recent searches...");
       await _repository.clearAllRecentSearches();
       _recentSearches = [];
+      _filteredSearches = [];
+      debugPrint("✅[RecentSearchViewModel] Cleared all recent searches");
       notifyListeners();
       return true;
     } catch (e) {
+      debugPrint("❌[RecentSearchViewModel] Failed to clear recent searches: $e");
       _setError(AppStrings.clearRecentSearchesError);
       return false;
     } finally {
@@ -144,57 +170,20 @@ class RecentSearchViewModel extends ChangeNotifier {
     }
   }
 
-  /// Get filtered recent searches
-  List<RecentSearchModel> getFilteredSearches(String filter) {
-    if (filter.trim().isEmpty) return recentSearches;
-
-    final lowercaseFilter = filter.toLowerCase();
-    return _recentSearches.where((search) {
-      return search.query.toLowerCase().contains(lowercaseFilter);
-    }).toList();
-  }
-
-  /// Get recent searches from a specific time period
-  List<RecentSearchModel> getRecentSearchesFromPeriod(Duration period) {
-    final cutoffTime = DateTime.now().subtract(period);
-    return _recentSearches.where((search) {
-      return search.timestamp.isAfter(cutoffTime);
-    }).toList();
-  }
-
-  /// Get today's searches
-  List<RecentSearchModel> getTodaySearches() {
-    final today = DateTime.now();
-    final startOfDay = DateTime(today.year, today.month, today.day);
-
-    return _recentSearches.where((search) {
-      return search.timestamp.isAfter(startOfDay);
-    }).toList();
-  }
-
-  /// Get most popular searches (by frequency)
-  Map<String, int> getSearchFrequency() {
-    final frequency = <String, int>{};
-
-    for (final search in _recentSearches) {
-      final query = search.query.toLowerCase();
-      frequency[query] = (frequency[query] ?? 0) + 1;
+  /// 🔹 Filter recent searches and update state
+  void getFilteredSearches(String filter) {
+    if (filter.trim().isEmpty) {
+      _filteredSearches = [];
+      debugPrint("ℹ️[RecentSearchViewModel] Filter cleared → showing all recent searches");
+    } else {
+      final lowercaseFilter = filter.toLowerCase();
+      _filteredSearches = _recentSearches.where((search) {
+        return search.query.toLowerCase().contains(lowercaseFilter);
+      }).toList();
+      debugPrint(
+          "🔍[RecentSearchViewModel] Filter applied: \"$filter\" → ${_filteredSearches.length} matches found");
     }
-
-    return frequency;
-  }
-
-  /// Get top N most frequent searches
-  List<String> getMostFrequentSearches({int limit = 5}) {
-    final frequency = getSearchFrequency();
-
-    final sortedEntries = frequency.entries.toList()
-      ..sort((a, b) => b.value.compareTo(a.value));
-
-    return sortedEntries
-        .take(limit)
-        .map((entry) => entry.key)
-        .toList();
+    notifyListeners();
   }
 
   // Private helper methods
@@ -217,7 +206,6 @@ class RecentSearchViewModel extends ChangeNotifier {
     _error = null;
   }
 
-  /// Clear error manually
   void clearError() {
     _clearError();
     notifyListeners();
@@ -225,6 +213,7 @@ class RecentSearchViewModel extends ChangeNotifier {
 
   @override
   void dispose() {
+    debugPrint("🛑[RecentSearchViewModel] Disposing RecentSearchViewModel");
     super.dispose();
   }
 }

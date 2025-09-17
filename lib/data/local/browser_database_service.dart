@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart'; // for debugPrint
 import 'package:sqflite/sqflite.dart';
 import 'package:uuid/uuid.dart';
 import 'package:path/path.dart';
@@ -8,18 +9,19 @@ import '../../resources/string_manager.dart';
 
 class BrowserDatabaseService {
   Database? _db;
-  final _uuid = const Uuid();
-
   /// Initialize the local SQLite database with all required tables.
   Future<void> init() async {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, AppStrings.databaseName);
 
+    debugPrint("🟡[BrowserDatabaseService] Opening database at path: $path");
+
     _db = await openDatabase(
       path,
       version: 1,
       onCreate: (db, version) async {
-        // Categories table (existing)
+        debugPrint("🟢[BrowserDatabaseService] Creating new database schema (version $version)");
+
         await db.execute('''
         CREATE TABLE IF NOT EXISTS categories (
           id TEXT PRIMARY KEY,
@@ -28,7 +30,6 @@ class BrowserDatabaseService {
         )
       ''');
 
-        // Transactions table (existing)
         await db.execute('''
         CREATE TABLE IF NOT EXISTS transactions (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -41,7 +42,6 @@ class BrowserDatabaseService {
         )
       ''');
 
-        // Bookmarks table (new)
         await db.execute('''
         CREATE TABLE IF NOT EXISTS bookmarks (
           id TEXT PRIMARY KEY,
@@ -53,16 +53,14 @@ class BrowserDatabaseService {
         )
       ''');
 
-        // Recent searches table (new)
         await db.execute('''
         CREATE TABLE IF NOT EXISTS recent_searches (
           id TEXT PRIMARY KEY,
           query TEXT NOT NULL,
-          searchedAt TEXT NOT NULL
+          timestamp TEXT NOT NULL
         )
       ''');
 
-        // Tabs table (new)
         await db.execute('''
         CREATE TABLE IF NOT EXISTS tabs (
           id TEXT PRIMARY KEY,
@@ -72,166 +70,163 @@ class BrowserDatabaseService {
           updatedAt TEXT NOT NULL
         )
       ''');
+
+        debugPrint("✅[BrowserDatabaseService] Database schema created");
       },
     );
+
+    debugPrint("✅[BrowserDatabaseService] Database opened successfully");
   }
 
-  // ===== BOOKMARK METHODS (new) =====
+  // ===== BOOKMARK METHODS =====
 
-  /// Insert a new bookmark
   Future<void> insertBookmark(BookmarkModel bookmark) async {
-    await _db?.insert(
+    debugPrint("🟡[BrowserDatabaseService] Inserting bookmark: ${bookmark.title} (${bookmark.url})");
+    final result = await _db?.insert(
       AppStrings.bookmarksTable,
       bookmark.toJson(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
+    debugPrint("✅[BrowserDatabaseService] Bookmark inserted with result: $result");
   }
 
-  /// Delete bookmark by ID
   Future<void> deleteBookmark(String id) async {
-    await _db?.delete(
+    debugPrint("🟡[BrowserDatabaseService] Deleting bookmark with id: $id");
+    final result = await _db?.delete(
       AppStrings.bookmarksTable,
       where: '${AppStrings.idField} = ?',
       whereArgs: [id],
     );
+    debugPrint("✅[BrowserDatabaseService] Deleted $result bookmark(s)");
   }
 
-  /// Get all bookmarks
   Future<List<BookmarkModel>> getAllBookmarks() async {
-    final List<Map<String, dynamic>>? maps = await _db?.query(
+    debugPrint("🟡[BrowserDatabaseService] Fetching all bookmarks...");
+    final maps = await _db?.query(
       AppStrings.bookmarksTable,
       orderBy: '${AppStrings.updatedAtField} DESC',
     );
-
-    if (maps == null || maps.isEmpty) {
-      return [];
-    }
-
-    return List.generate(maps.length, (i) {
-      return BookmarkModel.fromJson(maps[i]);
-    });
+    debugPrint("✅[BrowserDatabaseService] Found ${maps?.length ?? 0} bookmark(s)");
+    return (maps ?? []).map((e) => BookmarkModel.fromJson(e)).toList();
   }
 
-  /// Delete all bookmarks
   Future<void> clearAllBookmarks() async {
-    await _db?.delete(AppStrings.bookmarksTable);
+    debugPrint("🟡[BrowserDatabaseService] Clearing all bookmarks...");
+    final result = await _db?.delete(AppStrings.bookmarksTable);
+    debugPrint("✅[BrowserDatabaseService] Cleared $result bookmark(s)");
   }
 
-  // ===== RECENT SEARCH METHODS (new) =====
+  // ===== RECENT SEARCH METHODS =====
 
-  /// Insert a new recent search
   Future<void> insertRecentSearch(RecentSearchModel search) async {
-    // First, delete existing search with same query to avoid duplicates
-    await _db?.delete(
+    debugPrint("🟡[BrowserDatabaseService] Inserting recent search: '${search.query}' with id=${search.id}");
+
+    final deleted = await _db?.delete(
       AppStrings.recentSearchesTable,
       where: '${AppStrings.queryField} = ?',
       whereArgs: [search.query],
     );
+    debugPrint("ℹ️[BrowserDatabaseService] Removed $deleted duplicate(s) for query '${search.query}'");
 
-    // Then insert the new/updated search
-    await _db?.insert(
+    final result = await _db?.insert(
       AppStrings.recentSearchesTable,
       search.toJson(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
 
-    // Keep only the most recent searches (limit to 10)
+    debugPrint("✅[BrowserDatabaseService] Recent search inserted with result: $result (id=${search.id})");
+
     await _limitRecentSearches();
   }
 
-  /// Delete recent search by ID
-  Future<void> deleteRecentSearch(String id) async {
-    await _db?.delete(
+  Future<void> deleteRecentSearch(String query) async {
+    debugPrint("🟡[BrowserDatabaseService] Deleting recent search: $query");
+    final result = await _db?.delete(
       AppStrings.recentSearchesTable,
-      where: '${AppStrings.idField} = ?',
-      whereArgs: [id],
+      where: 'query = ?',
+      whereArgs: [query],
     );
+    debugPrint("✅[BrowserDatabaseService] Deleted $result recent search(es)");
   }
 
-  /// Get all recent searches ordered by most recent first
   Future<List<RecentSearchModel>> getAllRecentSearches() async {
-    final List<Map<String, dynamic>>? maps = await _db?.query(
+    debugPrint("🟡[BrowserDatabaseService] Fetching all recent searches...");
+    final maps = await _db?.query(
       AppStrings.recentSearchesTable,
-      orderBy: '${AppStrings.searchedAtField} DESC',
-      limit: 10, // Limit to 10 most recent
+      orderBy: '${AppStrings.timestamp} DESC',
+      limit: 10,
     );
-
-    if (maps == null || maps.isEmpty) {
-      return [];
-    }
-
-    return List.generate(maps.length, (i) {
-      return RecentSearchModel.fromJson(maps[i]);
-    });
+    debugPrint("✅[BrowserDatabaseService] Found ${maps?.length ?? 0} recent search(es)");
+    return (maps ?? []).map((e) => RecentSearchModel.fromJson(e)).toList();
   }
 
-  /// Delete all recent searches
   Future<void> clearAllRecentSearches() async {
-    await _db?.delete(AppStrings.recentSearchesTable);
+    debugPrint("🟡[BrowserDatabaseService] Clearing all recent searches...");
+    final result = await _db?.delete(AppStrings.recentSearchesTable);
+    debugPrint("✅[BrowserDatabaseService] Cleared $result recent search(es)");
   }
 
-  /// Limit recent searches to 10 most recent entries
   Future<void> _limitRecentSearches() async {
     if (_db == null) return;
 
-    final countResult = await _db!.rawQuery(
-        'SELECT COUNT(*) FROM ${AppStrings.recentSearchesTable}'
-    );
+    final countResult =
+    await _db!.rawQuery('SELECT COUNT(*) FROM ${AppStrings.recentSearchesTable}');
     final count = Sqflite.firstIntValue(countResult) ?? 0;
 
+    debugPrint("ℹ️[BrowserDatabaseService] Current recent search count: $count");
+
     if (count > 10) {
-      await _db!.rawDelete('''
+      debugPrint("🟡[BrowserDatabaseService] Trimming recent searches to 10");
+      final result = await _db!.rawDelete('''
         DELETE FROM ${AppStrings.recentSearchesTable} 
         WHERE ${AppStrings.idField} NOT IN (
           SELECT ${AppStrings.idField} FROM ${AppStrings.recentSearchesTable} 
-          ORDER BY ${AppStrings.searchedAtField} DESC 
+          ORDER BY ${AppStrings.timestamp} DESC 
           LIMIT 10
         )
       ''');
+      debugPrint("✅[BrowserDatabaseService] Trimmed $result old search(es)");
     }
   }
 
-  // ===== TAB METHODS (new) =====
+  // ===== TAB METHODS =====
 
-  /// Insert a new tab
   Future<void> insertTab(TabModel tab) async {
-    await _db?.insert(
+    debugPrint("🟡[BrowserDatabaseService] Inserting tab: ${tab.title} (${tab.url})");
+    final result = await _db?.insert(
       'tabs',
       tab.toJson(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
+    debugPrint("✅[BrowserDatabaseService] Tab inserted with result: $result");
   }
 
-  /// Delete tab by ID
   Future<void> deleteTab(String id) async {
-    await _db?.delete(
+    debugPrint("🟡[BrowserDatabaseService] Deleting tab with id: $id");
+    final result = await _db?.delete(
       'tabs',
       where: 'id = ?',
       whereArgs: [id],
     );
+    debugPrint("✅[BrowserDatabaseService] Deleted $result tab(s)");
   }
 
-  /// Get all tabs
   Future<List<TabModel>> getAllTabs() async {
-    final List<Map<String, dynamic>>? maps = await _db?.query(
-      'tabs',
-      orderBy: 'updatedAt DESC',
-    );
-    if (maps == null || maps.isEmpty) {
-      return [];
-    }
-    return List.generate(maps.length, (i) {
-      return TabModel.fromJson(maps[i]);
-    });
+    debugPrint("🟡[BrowserDatabaseService] Fetching all tabs...");
+    final maps = await _db?.query('tabs', orderBy: 'updatedAt DESC');
+    debugPrint("✅[BrowserDatabaseService] Found ${maps?.length ?? 0} tab(s)");
+    return (maps ?? []).map((e) => TabModel.fromJson(e)).toList();
   }
 
-  /// Delete all tabs
   Future<void> clearAllTabs() async {
-    await _db?.delete('tabs');
+    debugPrint("🟡[BrowserDatabaseService] Clearing all tabs...");
+    final result = await _db?.delete('tabs');
+    debugPrint("✅[BrowserDatabaseService] Cleared $result tab(s)");
   }
 
-  /// Close the database
   Future<void> close() async {
+    debugPrint("🛑[BrowserDatabaseService] Closing database...");
     await _db?.close();
+    debugPrint("✅[BrowserDatabaseService] Database closed");
   }
 }
