@@ -3,7 +3,7 @@ import 'package:open_arch_browser/resources/color_manager.dart';
 import 'package:open_arch_browser/resources/string_manager.dart';
 import 'package:open_arch_browser/resources/values_manager.dart';
 
-import '../utils/dummy_data.dart';
+import '../../utils/dummy_data.dart';
 
 class ArcMiniWindow extends StatefulWidget {
   final VoidCallback onClose;

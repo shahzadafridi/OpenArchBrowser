@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:open_arch_browser/presentation/widgets/side_bar_book_mark_section_wdiget.dart';
+import 'package:open_arch_browser/presentation/widgets/side_bar_shortcut_wdiget.dart';
+import 'package:open_arch_browser/presentation/widgets/side_bar_top_section_widget.dart';
 import 'package:open_arch_browser/resources/string_manager.dart';
-import 'package:open_arch_browser/widgets/side_bar_book_mark_section_wdiget.dart';
-import 'package:open_arch_browser/widgets/side_bar_shortcut_wdiget.dart';
-import 'package:open_arch_browser/widgets/side_bar_top_section_widget.dart';
-import '../resources/color_manager.dart';
-import '../resources/styles_manager.dart';
-import '../resources/values_manager.dart';
-import '../utils/dummy_data.dart';
+import '../../resources/color_manager.dart';
+import '../../resources/styles_manager.dart';
+import '../../resources/values_manager.dart';
+import '../../utils/dummy_data.dart';
 import 'side_bar_bottom_section_widget.dart';
 import 'side_bar_new_tab_section_widget.dart';
 

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:open_arch_browser/resources/assets_manager.dart';
 import 'package:open_arch_browser/resources/string_manager.dart';
-import '../resources/color_manager.dart';
-import '../resources/styles_manager.dart';
-import '../resources/values_manager.dart';
+import '../../resources/color_manager.dart';
+import '../../resources/styles_manager.dart';
+import '../../resources/values_manager.dart';
 
 class UrlTextFieldWidget extends StatelessWidget {
   final TextEditingController controller;

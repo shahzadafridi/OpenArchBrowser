@@ -7,9 +7,8 @@ import 'package:window_manager/window_manager.dart';
 import '../model/LanguageModel.dart';
 import '../resources/langauges_manager.dart';
 import '../resources/routes_manager.dart';
-import '../resources/theme_manager.dart';
 import '../resources/string_manager.dart';
-import '../viewmodels/theme_viewmodel.dart';
+import '../presentation/viewmodels/theme_viewmodel.dart';
 import 'di.dart';
 
 void main() async {
@@ -45,7 +44,7 @@ void main() async {
       supportedLocales: const [ARABIC_LOCALE, ENGLISH_LOCALE],
       path: ASSET_PATH_LOCALISATIONS,
       child: Phoenix(
-        child: AppProviders(
+        child: const AppProviders(
           child: MyApp(),
         ),
       ),

@@ -7,9 +7,9 @@ import '../data/repository/bookmark_repository.dart';
 import '../data/repository/recent_search_repository.dart';
 import '../model/LanguageModel.dart';
 import '../resources/string_manager.dart';
-import '../viewmodels/bookmark_viewmodel.dart';
-import '../viewmodels/recent_search_viewmodel.dart';
-import '../viewmodels/theme_viewmodel.dart';
+import '../presentation/viewmodels/bookmark_viewmodel.dart';
+import '../presentation/viewmodels/recent_search_viewmodel.dart';
+import '../presentation/viewmodels/theme_viewmodel.dart';
 
 class AppProviders extends StatelessWidget {
   final Widget child;

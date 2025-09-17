@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-
-import '../resources/values_manager.dart';
+import '../../resources/values_manager.dart';
 
 class SideBarControlButtonWidget extends StatelessWidget {
   final Color color;

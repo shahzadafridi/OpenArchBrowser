@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:open_arch_browser/resources/values_manager.dart';
-
-import '../resources/color_manager.dart';
-import '../resources/styles_manager.dart';
+import '../../resources/color_manager.dart';
+import '../../resources/styles_manager.dart';
 
 class SideBarShortcutWidget extends StatelessWidget {
   final String title;

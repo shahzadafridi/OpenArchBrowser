@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:open_arch_browser/presentation/widgets/side_bar_widget.dart';
+import 'package:open_arch_browser/presentation/widgets/webview_widget.dart';
 import 'package:open_arch_browser/resources/string_manager.dart';
 import 'package:open_arch_browser/resources/values_manager.dart';
-import 'package:open_arch_browser/widgets/side_bar_widget.dart';
-import 'package:open_arch_browser/widgets/webview_widget.dart';
-import 'package:open_arch_browser/widgets/arch_mini_window_widget.dart';
 import 'package:webview_flutter/webview_flutter.dart';
-import '../utils/dummy_data.dart';
+
+import '../../utils/dummy_data.dart';
+import 'arch_mini_window_widget.dart';
 
 class BrowserWidget extends StatefulWidget {
   const BrowserWidget({super.key});

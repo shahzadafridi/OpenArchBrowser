@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:open_arch_browser/presentation/widgets/url_text_field_widget.dart';
 import 'package:open_arch_browser/resources/assets_manager.dart';
 import 'package:open_arch_browser/resources/values_manager.dart';
-import 'package:open_arch_browser/widgets/url_text_field_widget.dart';
-import 'side_bar_control_button_widget.dart';
 import 'side_bar_navigation_button_widget.dart';
 
 class SideBarTopSectionWidget extends StatefulWidget {

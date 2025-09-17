@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-
-import '../resources/values_manager.dart';
+import '../../resources/values_manager.dart';
 
 class SideBarBookmarksSectionWidget extends StatefulWidget {
   /// Callback when a bookmark is tapped

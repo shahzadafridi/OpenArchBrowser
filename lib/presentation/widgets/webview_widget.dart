@@ -1,8 +1,7 @@
 import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
-
-import '../resources/values_manager.dart';
+import '../../resources/values_manager.dart';
 
 class WebViewContainer extends StatefulWidget {
   final String url;
