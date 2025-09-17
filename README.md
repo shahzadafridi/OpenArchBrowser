@@ -6,6 +6,9 @@ An open-source browser project inspired by Arch Browser, built with Flutter.
 
 OpenArchBrowser is an **open-source browser project** built with **Flutter** as a cross-platform solution, targeting Desktop Window, Linux & MacOS. The project aims to provide a modern, efficient, and customizable browsing experience while maintaining high performance and security standards.
 
+<img width="2792" height="1442" alt="screenshot_3x_postspark_2025-09-17_13-38-01" src="https://github.com/user-attachments/assets/e5f89cb3-ea08-4382-b982-9e2379b00bdc" />
+
+
 ## Architecture
 
 The project follows **MVVM** adapted for Flutter, ensuring a clear separation of concerns:
@@ -31,24 +34,16 @@ The project follows **MVVM** adapted for Flutter, ensuring a clear separation of
 ## Project Structure
 ```
 lib/
- ├── core/
- │   ├── constants/
- │   ├── errors/
- │   ├── network/
- │   └── utils/
+ ├── app/
  ├── data/
- │   ├── datasources/
- │   ├── models/
+ │   ├── local/
  │   └── repositories/
- ├── domain/
- │   ├── entities/
- │   ├── repositories/
- │   └── usecases/
+ ├── model/
+ ├── resources/
  ├── presentation/
- │   ├── pages/
  │   ├── widgets/
  │   └── viewmodels/
- └── main.dart
+ └── utils.dart
 ```
 
 ## Setup & Installation
