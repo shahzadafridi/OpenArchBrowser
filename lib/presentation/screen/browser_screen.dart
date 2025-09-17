@@ -1,21 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:open_arch_browser/presentation/viewmodels/tab_viewmodel.dart';
 import 'package:open_arch_browser/presentation/widgets/side_bar_widget.dart';
 import 'package:open_arch_browser/presentation/widgets/webview_widget.dart';
 import 'package:open_arch_browser/resources/string_manager.dart';
 import 'package:open_arch_browser/resources/values_manager.dart';
+import 'package:provider/provider.dart';
 import 'package:webview_flutter/webview_flutter.dart';
-
 import '../../utils/dummy_data.dart';
-import 'arch_mini_window_widget.dart';
+import '../viewmodels/bookmark_viewmodel.dart';
+import '../viewmodels/recent_search_viewmodel.dart';
+import '../viewmodels/theme_viewmodel.dart';
+import '../widgets/arch_mini_window_widget.dart';
 
-class BrowserWidget extends StatefulWidget {
-  const BrowserWidget({super.key});
+class BrowserScreen extends StatefulWidget {
+  const BrowserScreen({super.key});
 
   @override
-  _BrowserWidgetState createState() => _BrowserWidgetState();
+  _BrowserScreenState createState() => _BrowserScreenState();
 }
 
-class _BrowserWidgetState extends State<BrowserWidget> {
+class _BrowserScreenState extends State<BrowserScreen> {
   final GlobalKey _searchBarKey = GlobalKey();
   OverlayEntry? _overlayEntry;
 
@@ -77,7 +81,7 @@ class _BrowserWidgetState extends State<BrowserWidget> {
 
   OverlayEntry _createOverlayEntry() {
     RenderBox renderBox =
-        _searchBarKey.currentContext!.findRenderObject() as RenderBox;
+    _searchBarKey.currentContext!.findRenderObject() as RenderBox;
     var offset = renderBox.localToGlobal(Offset.zero);
 
     return OverlayEntry(
@@ -87,9 +91,7 @@ class _BrowserWidgetState extends State<BrowserWidget> {
           Positioned.fill(
             child: GestureDetector(
               onTap: _closeMiniWindow,
-              child: Container(
-                color: Colors.transparent,
-              ),
+              child: Container(color: Colors.transparent),
             ),
           ),
           // The actual mini window
@@ -104,19 +106,19 @@ class _BrowserWidgetState extends State<BrowserWidget> {
                 duration: const Duration(milliseconds: AppMilliSec.s200),
                 builder: (context, value, child) => Transform.translate(
                   offset:
-                      Offset(AppSize.s0, (AppSize.s1 - value) * AppSize.s10),
+                  Offset(AppSize.s0, (AppSize.s1 - value) * AppSize.s10),
                   child: Opacity(opacity: value, child: child),
                 ),
                 child: ArcMiniWindow(
-                  onClose: _closeMiniWindow, // Use dedicated close method
-                  onSearch: _handleSearch, // Use dedicated search handler
+                  onClose: _closeMiniWindow,
+                  onSearch: _handleSearch,
                   recentSearches: const [
                     AppStrings.recentSearchFlutter,
                     AppStrings.recentSearchDart,
                     AppStrings.recentSearchMobile,
                     AppStrings.recentSearchState,
                     AppStrings.recentSearchApi,
-                  ], // Add some recent searches
+                  ],
                 ),
               ),
             ),
@@ -131,50 +133,64 @@ class _BrowserWidgetState extends State<BrowserWidget> {
     return Scaffold(
       appBar: null,
       body: SafeArea(
-          top: false,
-          child: Container(
-              decoration: const BoxDecoration(
-                color: Color(0xFFCBBFCB),
-                border: Border(
-                    right: BorderSide(color: Color(0xFFD1D1D6), width: 0.5)),
+        top: false,
+        child: Container(
+          decoration: const BoxDecoration(
+            color: Color(0xFFCBBFCB),
+            border: Border(
+              right: BorderSide(color: Color(0xFFD1D1D6), width: 0.5),
+            ),
+          ),
+          child: Row(
+            children: [
+              Consumer4<BookmarkViewModel, RecentSearchViewModel, TabViewModel, ThemeViewModel>(
+                builder: (context, bookmarkVM, recentSearchVM, tabVM, themeVM, _) {
+                  return SidebarWidget(
+                    onBackTap: _handleBackNavigation,
+                    onForwardTap: _handleForwardNavigation,
+                    onRefresh: () {
+                      webController.reload();
+                    },
+                    onControlTap: () {},
+                    onAddressTap: _toggleMiniWindow,
+                    searchBarKey: _searchBarKey,
+                    onBookmarkSelected: (url) {
+                      webController.loadRequest(Uri.parse(url));
+                    },
+                    onNewTabTap: () {
+                      setState(() {
+                        currentUrl = AppStrings.defaultNewTabUrl;
+                        webController.loadRequest(Uri.parse(currentUrl));
+                      });
+                    },
+                    siteUrls: siteUrls,
+                    onSiteSelected: (site) {
+                      setState(() {
+                        webController.loadRequest(Uri.parse(siteUrls[site]!));
+                      });
+                    },
+                    onAddTap: () {},
+                    textEditingController: textEditingController,
+                    bookmarkViewModel: bookmarkVM,
+                    recentSearchViewModel: recentSearchVM,
+                    tabViewModel: tabVM,
+                    themeViewModel: themeVM,
+                  );
+                },
               ),
-              child: Row(
-                children: [
-                  SidebarWidget(
-                      onBackTap: _handleBackNavigation,
-                      onForwardTap: _handleForwardNavigation,
-                      onRefresh: () {
-                        webController.reload();
-                      },
-                      onControlTap: () {},
-                      onAddressTap: _toggleMiniWindow,
-                      searchBarKey: _searchBarKey,
-                      onBookmarkSelected: (url) {
-                        webController.loadRequest(Uri.parse(url));
-                      },
-                      onNewTabTap: () {
-                        setState(() {
-                          currentUrl = AppStrings.defaultNewTabUrl;
-                          webController.loadRequest(Uri.parse(currentUrl));
-                        });
-                      },
-                      siteUrls: siteUrls,
-                      onSiteSelected: (site) {
-                        setState(() {
-                          webController.loadRequest(Uri.parse(siteUrls[site]!));
-                        });
-                      },
-                      onAddTap: () {},
-                      textEditingController: textEditingController),
-                  Expanded(
-                      child: Container(
-                          padding: const EdgeInsets.all(AppSize.s10),
-                          child: WebViewContainer(
-                            webController: webController,
-                            url: AppStrings.defaultWebViewUrl,
-                          ))),
-                ],
-              ))),
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.all(AppSize.s10),
+                  child: WebViewContainer(
+                    webController: webController,
+                    url: AppStrings.defaultWebViewUrl,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

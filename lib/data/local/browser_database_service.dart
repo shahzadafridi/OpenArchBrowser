@@ -3,6 +3,7 @@ import 'package:uuid/uuid.dart';
 import 'package:path/path.dart';
 import '../../model/BookmarkModel.dart';
 import '../../model/RecentSearchModel.dart';
+import '../../model/TabModel.dart';
 import '../../resources/string_manager.dart';
 
 class BrowserDatabaseService {
@@ -58,6 +59,17 @@ class BrowserDatabaseService {
           id TEXT PRIMARY KEY,
           query TEXT NOT NULL,
           searchedAt TEXT NOT NULL
+        )
+      ''');
+
+        // Tabs table (new)
+        await db.execute('''
+        CREATE TABLE IF NOT EXISTS tabs (
+          id TEXT PRIMARY KEY,
+          title TEXT NOT NULL,
+          url TEXT NOT NULL,
+          createdAt TEXT NOT NULL,
+          updatedAt TEXT NOT NULL
         )
       ''');
       },
@@ -177,6 +189,45 @@ class BrowserDatabaseService {
         )
       ''');
     }
+  }
+
+  // ===== TAB METHODS (new) =====
+
+  /// Insert a new tab
+  Future<void> insertTab(TabModel tab) async {
+    await _db?.insert(
+      'tabs',
+      tab.toJson(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  /// Delete tab by ID
+  Future<void> deleteTab(String id) async {
+    await _db?.delete(
+      'tabs',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  /// Get all tabs
+  Future<List<TabModel>> getAllTabs() async {
+    final List<Map<String, dynamic>>? maps = await _db?.query(
+      'tabs',
+      orderBy: 'updatedAt DESC',
+    );
+    if (maps == null || maps.isEmpty) {
+      return [];
+    }
+    return List.generate(maps.length, (i) {
+      return TabModel.fromJson(maps[i]);
+    });
+  }
+
+  /// Delete all tabs
+  Future<void> clearAllTabs() async {
+    await _db?.delete('tabs');
   }
 
   /// Close the database

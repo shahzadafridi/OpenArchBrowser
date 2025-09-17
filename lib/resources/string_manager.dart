@@ -111,4 +111,9 @@ class AppStrings {
   static const String bookmarksCleared = "All bookmarks cleared";
   static const String recentSearchesCleared = "Recent searches cleared";
 
+  static String deleteTabError = "Failed to delete tab";
+  static String addTabError = "Failed to add tab";
+  static String clearTabsError = "Failed to clear tabs";
+  static String loadTabsError = "Failed to load tabs";
+
 }

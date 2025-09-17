@@ -1,9 +1,7 @@
+import 'package:open_arch_browser/presentation/screen/browser_screen.dart';
 import 'package:open_arch_browser/resources/string_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
-
-import '../presentation/widgets/browser_widget.dart';
-
 
 class Routes {
   static const String homeRoute = "/home";
@@ -14,7 +12,7 @@ class RouteGenerator {
     final arguments = settings.arguments;
     switch (settings.name) {
       case Routes.homeRoute:
-        return MaterialPageRoute(builder: (_) => const BrowserWidget());
+        return MaterialPageRoute(builder: (_) => const BrowserScreen());
       default:
         return unDefinedRoute();
     }

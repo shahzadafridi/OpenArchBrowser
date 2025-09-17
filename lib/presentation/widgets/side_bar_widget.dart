@@ -7,6 +7,10 @@ import '../../resources/color_manager.dart';
 import '../../resources/styles_manager.dart';
 import '../../resources/values_manager.dart';
 import '../../utils/dummy_data.dart';
+import '../viewmodels/bookmark_viewmodel.dart';
+import '../viewmodels/recent_search_viewmodel.dart';
+import '../viewmodels/tab_viewmodel.dart';
+import '../viewmodels/theme_viewmodel.dart';
 import 'side_bar_bottom_section_widget.dart';
 import 'side_bar_new_tab_section_widget.dart';
 
@@ -23,6 +27,10 @@ class SidebarWidget extends StatefulWidget {
   final Function(String) onSiteSelected;
   final void Function(String url) onBookmarkSelected;
   final TextEditingController textEditingController;
+  final BookmarkViewModel bookmarkViewModel;
+  final RecentSearchViewModel recentSearchViewModel;
+  final TabViewModel tabViewModel;
+  final ThemeViewModel themeViewModel;
 
   const SidebarWidget({
     super.key,
@@ -38,6 +46,10 @@ class SidebarWidget extends StatefulWidget {
     required this.onSiteSelected,
     required this.onBookmarkSelected,
     required this.textEditingController,
+    required this.bookmarkViewModel,
+    required this.recentSearchViewModel,
+    required this.tabViewModel,
+    required this.themeViewModel,
   });
 
   @override
