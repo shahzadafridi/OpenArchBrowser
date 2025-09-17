@@ -34,24 +34,16 @@ The project follows **MVVM** adapted for Flutter, ensuring a clear separation of
 ## Project Structure
 ```
 lib/
- ├── core/
- │   ├── constants/
- │   ├── errors/
- │   ├── network/
- │   └── utils/
+ ├── app/
  ├── data/
- │   ├── datasources/
- │   ├── models/
+ │   ├── local/
  │   └── repositories/
- ├── domain/
- │   ├── entities/
- │   ├── repositories/
- │   └── usecases/
+ ├── model/
+ ├── resources/
  ├── presentation/
- │   ├── pages/
  │   ├── widgets/
  │   └── viewmodels/
- └── main.dart
+ └── utils.dart
 ```
 
 ## Setup & Installation
