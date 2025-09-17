@@ -24,3 +24,15 @@ final shortcuts = [
     "color": const Color(0xFFFF0000),
   },
 ];
+
+// Dummy recent searches for UI testing
+final List<String> dummyRecentSearches = [
+  'Flutter widgets',
+  'Dart async programming',
+  'Material Design 3',
+  'State management Flutter',
+  'Firebase authentication',
+  'REST API integration',
+  'Flutter animations',
+  'Custom painters Flutter',
+];

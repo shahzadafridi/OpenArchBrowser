@@ -6,6 +6,7 @@ class AppStrings {
 
 
   static const String next = "Next";
+  static const String new_label = "New";
 
   // Browser Widget
   static const String currentUrl = "https://www.youtube.com";
@@ -20,5 +21,22 @@ class AppStrings {
   static const String newTab = "New Tab";
   static const String mySection = "My Section";
   static const String enterUrl = "Enter URL";
+
+  // Google Search URL
+  static const String googleSearchUrl = "https://www.google.com/search?q=";
+
+  // Default WebView URL
+  static const String defaultWebViewUrl = "https://flutter.dev";
+
+  // Recent Searches (for demo/testing)
+  static const String recentSearchFlutter = "Flutter development";
+  static const String recentSearchDart = "Dart programming";
+  static const String recentSearchMobile = "Mobile app design";
+  static const String recentSearchState = "State management";
+  static const String recentSearchApi = "API integration";
+
+  // Mini Window Strings
+  static const String recentSearchesTitle = "Recent Searches";
+  static const String demoLabel = "Demo";
 
 }

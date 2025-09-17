@@ -25,6 +25,7 @@ class _BrowserWidgetState extends State<BrowserWidget> {
   @override
   void dispose() {
     textEditingController.dispose();
+    _closeMiniWindow(); // Ensure overlay is closed when disposing
     super.dispose();
   }
 
@@ -51,12 +52,26 @@ class _BrowserWidgetState extends State<BrowserWidget> {
 
   void _toggleMiniWindow() {
     if (_overlayEntry == null) {
-      _overlayEntry = _createOverlayEntry();
-      Overlay.of(context).insert(_overlayEntry!);
+      _showMiniWindow();
     } else {
-      _overlayEntry?.remove();
-      _overlayEntry = null;
+      _closeMiniWindow();
     }
+  }
+
+  void _showMiniWindow() {
+    _overlayEntry = _createOverlayEntry();
+    Overlay.of(context).insert(_overlayEntry!);
+  }
+
+  void _closeMiniWindow() {
+    _overlayEntry?.remove();
+    _overlayEntry = null;
+  }
+
+  void _handleSearch(String query) {
+    _closeMiniWindow(); // Close the mini window first
+    textEditingController.text = "${AppStrings.googleSearchUrl}$query";
+    webController.loadRequest(Uri.parse("${AppStrings.googleSearchUrl}$query"));
   }
 
   OverlayEntry _createOverlayEntry() {
@@ -65,30 +80,47 @@ class _BrowserWidgetState extends State<BrowserWidget> {
     var offset = renderBox.localToGlobal(Offset.zero);
 
     return OverlayEntry(
-      builder: (context) => Positioned(
-        left: offset.dx,
-        top: offset.dy,
-        width: 350,
-        child: Material(
-          color: Colors.transparent,
-          child: TweenAnimationBuilder<double>(
-            tween: Tween(begin: AppSize.s0, end: AppSize.s1),
-            duration: const Duration(milliseconds: AppMilliSec.s200),
-            builder: (context, value, child) => Transform.translate(
-              offset: Offset(AppSize.s0, (AppSize.s1 - value) * AppSize.s10),
-              child: Opacity(opacity: value, child: child),
+      builder: (context) => Stack(
+        children: [
+          // Invisible barrier to close overlay when tapping outside
+          Positioned.fill(
+            child: GestureDetector(
+              onTap: _closeMiniWindow,
+              child: Container(
+                color: Colors.transparent,
+              ),
             ),
-            child: ArcMiniWindow(
-                onClose: _toggleMiniWindow,
-                onSearch: (query) {
-                  _overlayEntry?.remove();
-                  textEditingController.text =
-                      "https://www.google.com/search?q=$query";
-                  webController.loadRequest(
-                      Uri.parse("https://www.google.com/search?q=$query"));
-                }),
           ),
-        ),
+          // The actual mini window
+          Positioned(
+            left: offset.dx,
+            top: offset.dy,
+            width: 350,
+            child: Material(
+              color: Colors.transparent,
+              child: TweenAnimationBuilder<double>(
+                tween: Tween(begin: AppSize.s0, end: AppSize.s1),
+                duration: const Duration(milliseconds: AppMilliSec.s200),
+                builder: (context, value, child) => Transform.translate(
+                  offset:
+                      Offset(AppSize.s0, (AppSize.s1 - value) * AppSize.s10),
+                  child: Opacity(opacity: value, child: child),
+                ),
+                child: ArcMiniWindow(
+                  onClose: _closeMiniWindow, // Use dedicated close method
+                  onSearch: _handleSearch, // Use dedicated search handler
+                  recentSearches: const [
+                    AppStrings.recentSearchFlutter,
+                    AppStrings.recentSearchDart,
+                    AppStrings.recentSearchMobile,
+                    AppStrings.recentSearchState,
+                    AppStrings.recentSearchApi,
+                  ], // Add some recent searches
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -138,7 +170,7 @@ class _BrowserWidgetState extends State<BrowserWidget> {
                           padding: const EdgeInsets.all(AppSize.s10),
                           child: WebViewContainer(
                             webController: webController,
-                            url: "https://flutter.dev",
+                            url: AppStrings.defaultWebViewUrl,
                           ))),
                 ],
               ))),
